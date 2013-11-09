@@ -1,0 +1,43 @@
+
+SRCDIR = .
+OUTDIR = .
+
+CMD_SRC = qrcmd.c
+CMD_OBJ = $(patsubst %.c, %.o, ${CMD_SRC})
+CMD_BIN = $(OUTDIR)/qr
+CMD_BIN_MULTI = $(OUTDIR)/qrs
+
+LIB_STATIC = $(OUTDIR)/libqr.a
+LIB_SHARED = $(OUTDIR)/libqr.so
+
+LIBQR_SRC = $(filter-out ${CMD_SRC}, $(notdir $(wildcard ${SRCDIR}/*.c)))
+LIBQR_OBJ = $(patsubst %.c, %.o, ${LIBQR_SRC})
+
+vpath %.c ${SRCDIR}
+
+AR = ar -c
+CC = gcc
+RM = rm
+
+INCLUDES = -I.
+DEFINES = 
+LIBS = -lrt -lz -lm -lpthread
+
+CFLAGS = -g $(INCLUDES) $(DEFINES)
+
+all: $(LIB_STATIC) $(CMD_BIN)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $< $(LIBS)
+
+$(LIB_STATIC): $(LIBQR_OBJ)
+	$(AR) -rs $@ $^
+
+$(CMD_BIN): $(CMD_OBJ) $(LIBQR_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+clean:
+	$(RM) $(LIBQR_OBJ)
+	$(RM) $(CMD_OBJ)
+	$(RM) $(CMD_BIN)
+	$(RM) $(LIB_STATIC)
